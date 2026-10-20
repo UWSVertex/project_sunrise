@@ -1,0 +1,420 @@
+{% extends 'shiro/base.html' %}
+
+{% block title %}{{ title }} - Companion App{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ title }}</h1>
+</div>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Error:</strong>
+            {% for error in form.non_field_errors %}
+                <div>{{ error }}</div>
+            {% endfor %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- CARD 1: Basic Info -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-folder"></i> Basic Info</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">
+                            <i class="fas fa-tag"></i> Project Name *
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.name.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            <i class="fas fa-align-left"></i> Description
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.description.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">
+                            <i class="fas fa-layer-group"></i> Category
+                        </label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.category.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 2: Status & Priority -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-circle"></i> Status & Priority</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="{{ form.status.id_for_label }}" class="form-label">
+                            <i class="fas fa-heartbeat"></i> Status *
+                        </label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.status.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.priority.id_for_label }}" class="form-label">
+                            <i class="fas fa-flag"></i> Priority *
+                        </label>
+                        {{ form.priority }}
+                        {% if form.priority.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.priority.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.progress.id_for_label }}" class="form-label">
+                            <i class="fas fa-chart-line"></i> Progress (%)
+                        </label>
+                        {{ form.progress }}
+                        {% if form.progress.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.progress.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 3: Dates -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar"></i> Dates</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="{{ form.start_date.id_for_label }}" class="form-label">
+                            <i class="fas fa-play"></i> Start Date
+                        </label>
+                        {{ form.start_date }}
+                        {% if form.start_date.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.start_date.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.deadline.id_for_label }}" class="form-label">
+                            <i class="fas fa-flag-checkered"></i> Deadline
+                        </label>
+                        {{ form.deadline }}
+                        {% if form.deadline.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.deadline.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.completion_date.id_for_label }}" class="form-label">
+                            <i class="fas fa-check"></i> Completion Date
+                        </label>
+                        {{ form.completion_date }}
+                        {% if form.completion_date.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.completion_date.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 4: Budget -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-dollar-sign"></i> Budget</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="{{ form.budget.id_for_label }}" class="form-label">
+                            <i class="fas fa-wallet"></i> Budget
+                        </label>
+                        {{ form.budget }}
+                        {% if form.budget.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.budget.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.spent.id_for_label }}" class="form-label">
+                            <i class="fas fa-receipt"></i> Spent
+                        </label>
+                        {{ form.spent }}
+                        {% if form.spent.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.spent.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 5: Team & Client -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header" style="background-color: #8839ef; color: #fff;">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> Team & Client</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="{{ form.owner.id_for_label }}" class="form-label">
+                            <i class="fas fa-user-tie"></i> Owner
+                        </label>
+                        {{ form.owner }}
+                        {% if form.owner.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.owner.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.team_members.id_for_label }}" class="form-label">
+                            <i class="fas fa-user-friends"></i> Team Members
+                        </label>
+                        {{ form.team_members }}
+                        <small class="form-text text-muted d-block mt-1">Comma-separated names</small>
+                        {% if form.team_members.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.team_members.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.client.id_for_label }}" class="form-label">
+                            <i class="fas fa-building"></i> Client
+                        </label>
+                        {{ form.client }}
+                        {% if form.client.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.client.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 6: Tags -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header" style="background-color: #89dceb; color: #1e1e2e;">
+                    <h5 class="mb-0"><i class="fas fa-tags"></i> Tags</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="{{ form.tags.id_for_label }}" class="form-label">
+                            <i class="fas fa-hashtag"></i> Tags
+                        </label>
+                        {{ form.tags }}
+                        <small class="form-text text-muted d-block mt-1">Comma-separated tags</small>
+                        {% if form.tags.errors %}
+                            <div class="invalid-feedback d-block">{% for error in form.tags.errors %}{{ error }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 7: Linked Servers -->
+        <div class="col-lg-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-server"></i> Linked Servers</h5>
+                    <span class="badge bg-light text-dark"><span id="selectedCount">0</span> selected</span>
+                </div>
+                <div class="card-body">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" id="serverSearch" class="form-control"
+                               placeholder="Search by name, IP, hostname, manufacturer, or model..." autocomplete="off">
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <button type="button" id="selectAllBtn" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-check-double"></i> Select All Visible
+                            </button>
+                            <button type="button" id="clearAllBtn" class="btn btn-sm btn-outline-secondary">
+                                Clear Selection
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="list-group server-picker-list" style="max-height: 360px; overflow-y: auto;">
+                        {% for server in form.servers.field.queryset %}
+                            <label class="list-group-item d-flex align-items-center gap-3 server-row"
+                                   data-search="{{ server.name|lower }} {{ server.ip_address|lower }} {{ server.hostname|lower }} {{ server.manufacturer|lower }} {{ server.model|lower }}">
+                                <input type="checkbox" name="servers" value="{{ server.pk }}" id="id_servers_{{ server.pk }}"
+                                       {% if server.pk in form.servers.value %}checked{% endif %}>
+                                <span class="flex-grow-1">
+                                    <strong>{{ server.name }}</strong>
+                                    <span class="badge bg-{% if server.status == 'active' %}success{% elif server.status == 'maintenance' %}warning{% else %}secondary{% endif %} ms-2">{{ server.get_status_display }}</span>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ server.ip_address }}{% if server.hostname %} &middot; {{ server.hostname }}{% endif %}
+                                        {% if server.manufacturer %} &middot; {{ server.manufacturer }} {{ server.model }}{% endif %}
+                                        &middot; {{ server.get_environment_display }}
+                                    </small>
+                                </span>
+                            </label>
+                        {% empty %}
+                            <p class="text-muted mb-0">No servers in the infrastructure inventory yet.</p>
+                        {% endfor %}
+                    </div>
+                    {% if form.servers.errors %}
+                        <div class="invalid-feedback d-block">{% for error in form.servers.errors %}{{ error }}{% endfor %}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> Save Project
+                </button>
+                <a href="javascript:history.back()" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i> Cancel
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+<style>
+    form .row > [class*="col-"] {
+        display: flex;
+    }
+
+    .card {
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        width: 100%;
+    }
+
+    .card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+
+    .card-header {
+        font-weight: 600;
+        border-bottom: 2px solid rgba(0,0,0,0.1);
+    }
+
+    .form-control, .form-select {
+        border-radius: 6px;
+        border: 1px solid var(--dracula-comment);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--dracula-cyan);
+        box-shadow: 0 0 0 0.2rem rgba(137, 220, 235, 0.25);
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--dracula-foreground);
+    }
+
+    body.light-mode .form-label {
+        color: var(--dracula-foreground-light);
+    }
+
+    .server-row {
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+    }
+    .server-row:hover {
+        background-color: var(--dracula-selection);
+    }
+    body.light-mode .server-row:hover {
+        background-color: #e6e9ef;
+    }
+    .server-row.d-none {
+        display: none !important;
+    }
+    .server-row input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+(function () {
+    const searchInput = document.getElementById('serverSearch');
+    const rows = document.querySelectorAll('.server-row');
+    const selectedCountEl = document.getElementById('selectedCount');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+
+    function checkboxes() {
+        return document.querySelectorAll('.server-row input[type="checkbox"]');
+    }
+
+    function updateCount() {
+        const count = document.querySelectorAll('.server-row input[type="checkbox"]:checked').length;
+        if (selectedCountEl) selectedCountEl.textContent = count;
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            const term = this.value.trim().toLowerCase();
+            rows.forEach(function (row) {
+                const haystack = row.getAttribute('data-search') || '';
+                row.classList.toggle('d-none', term.length > 0 && haystack.indexOf(term) === -1);
+            });
+        });
+    }
+
+    checkboxes().forEach(function (cb) {
+        cb.addEventListener('change', updateCount);
+    });
+
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function () {
+            rows.forEach(function (row) {
+                if (!row.classList.contains('d-none')) {
+                    const cb = row.querySelector('input[type="checkbox"]');
+                    if (cb) cb.checked = true;
+                }
+            });
+            updateCount();
+        });
+    }
+
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function () {
+            checkboxes().forEach(function (cb) { cb.checked = false; });
+            updateCount();
+        });
+    }
+
+    updateCount();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'shiro/base.html' %}
+
+{% block title %}Rack {{ location.name }} - Infrastructure Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <h1 class="mb-2"><i class="fas fa-layer-group"></i> {{ location.name }}</h1>
+        <p class="text-muted mb-0">
+            <a href="{% url 'inframan:site_detail' location.site.pk %}">{{ location.site.name }}</a>
+        </p>
+    </div>
+    <div class="col-lg-4 text-end">
+        <a href="{% url 'inframan:site_detail' location.site.pk %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Site
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0"><i class="fas fa-layer-group"></i> Rack Layout</h5></div>
+            <div class="card-body">
+                <div class="rack-visualization">
+                    <div class="rack-container">
+                        <div class="rack-header">
+                            <div class="rack-title">{{ location.name }}</div>
+                            <div class="rack-units-label">{{ height }}U Rack</div>
+                        </div>
+
+                        <div class="rack-body">
+                            {% for row in rows %}
+                                {% if row.empty %}
+                                <div class="rack-unit" data-unit="{{ row.u }}">
+                                    <div class="unit-number">{{ row.u }}U</div>
+                                    <div class="empty-slot">Empty</div>
+                                </div>
+                                {% else %}
+                                <div class="rack-unit occupied" data-unit="{{ row.u }}" style="min-height: {{ row.span }}0px;">
+                                    <div class="unit-number">{{ row.u }}U</div>
+                                    <a href="{% url 'inframan:server_detail' row.server.pk %}" class="device-slot device-link">
+                                        <div class="device-name">{{ row.server.name|truncatewords:2 }}</div>
+                                        <div class="device-type">{{ row.span }}U &middot; {{ row.server.ip_address }}</div>
+                                    </a>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="rack-footer">
+                            <small>
+                                <span class="badge bg-success">{{ used_units }}U Used</span>
+                                <span class="badge bg-secondary">{{ height|add:"0" }}U Total</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="rack-legend">
+                    <p><strong>Legend:</strong></p>
+                    <ul class="small list-unstyled">
+                        <li><span class="badge bg-primary">Occupied</span> Unit contains a server</li>
+                        <li><span class="badge bg-light border text-dark">Empty</span> Unit is available</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card mb-3">
+            <div class="card-header"><h5 class="mb-0"><i class="fas fa-info-circle"></i> Rack Information</h5></div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Site</dt>
+                    <dd class="col-sm-8"><a href="{% url 'inframan:site_detail' location.site.pk %}">{{ location.site.name }}</a></dd>
+                    <dt class="col-sm-4">Location Type</dt>
+                    <dd class="col-sm-8">{{ location.get_location_type_display }}</dd>
+                    <dt class="col-sm-4">Height</dt>
+                    <dd class="col-sm-8">{{ height }} U</dd>
+                    <dt class="col-sm-4">Servers</dt>
+                    <dd class="col-sm-8">{{ rows|length|add:"0" }} rows, {{ unassigned|length }} unplaced</dd>
+                </dl>
+                {% if location.notes %}<div class="border-top pt-3"><strong>Notes</strong><p>{{ location.notes }}</p></div>{% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-server"></i> Servers in Rack</h5>
+                <a href="{% url 'inframan:server_create' %}" class="btn btn-sm btn-success"><i class="fas fa-plus"></i> Add Server</a>
+            </div>
+            <div class="card-body p-0">
+                {% if placed or unassigned %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light"><tr><th>U Position</th><th>Server Name</th><th>Height</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {% for srv in placed %}
+                            <tr>
+                                <td><strong>{{ srv.rack_position }}U</strong></td>
+                                <td><a href="{% url 'inframan:server_detail' srv.pk %}">{{ srv.name }}</a></td>
+                                <td><span class="badge bg-secondary">{{ srv.rack_units }}U</span></td>
+                                <td><a href="{% url 'inframan:server_edit' srv.pk %}" class="btn btn-sm btn-warning"><i class="fas fa-pen"></i></a></td>
+                            </tr>
+                            {% endfor %}
+                            {% for srv in unassigned %}
+                            <tr class="table-warning">
+                                <td><em>Unplaced</em></td>
+                                <td><a href="{% url 'inframan:server_detail' srv.pk %}">{{ srv.name }}</a></td>
+                                <td><span class="badge bg-secondary">{{ srv.rack_units }}U</span></td>
+                                <td><a href="{% url 'inframan:server_edit' srv.pk %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-location-dot"></i> Place</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info m-3 mb-0">This rack is empty. <a href="{% url 'inframan:server_create' %}">Add a server</a></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.rack-visualization{display:flex;justify-content:center;padding:15px 0}
+.rack-container{background:linear-gradient(to right,#f5f5f5,#ffffff);border:3px solid #333;border-radius:8px;overflow:hidden;min-width:300px;box-shadow:0 4px 8px rgba(0,0,0,0.1)}
+.rack-header{background:#2c3e50;color:white;padding:15px;text-align:center;border-bottom:2px solid #34495e}
+.rack-title{font-weight:bold;font-size:16px}
+.rack-units-label{font-size:12px;opacity:0.8}
+.rack-body{min-height:400px;max-height:600px;overflow-y:auto}
+.rack-unit{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #ddd;background-color:#f9f9f9;min-height:50px;transition:background-color 0.2s}
+.rack-unit:hover{background-color:#f0f0f0}
+.rack-unit.occupied{background-color:#e8f4f8}
+.unit-number{font-weight:bold;color:#666;min-width:40px;text-align:right;padding-right:10px}
+.device-slot{flex:1;background:linear-gradient(135deg,#3498db,#2980b9);color:white;padding:8px 12px;border-radius:4px;text-decoration:none;display:block}
+.device-slot:hover{background:linear-gradient(135deg,#2980b9,#1f618d)}
+.device-link{text-decoration:none;color:white;display:block}
+.device-name{font-weight:bold;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.device-type{font-size:11px;opacity:0.9}
+.empty-slot{flex:1;color:#999;font-style:italic;font-size:12px}
+.rack-footer{background:#f5f5f5;padding:10px 15px;border-top:1px solid #ddd;text-align:center}
+</style>
+{% endblock %}

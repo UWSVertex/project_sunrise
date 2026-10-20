@@ -1,0 +1,39 @@
+{% extends 'shiro/base.html' %}
+
+{% block title %}Racks - Infrastructure Management{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h1><i class="fas fa-layer-group"></i> Racks</h1>
+    <a href="{% url 'inframan:rack_create' %}" class="btn btn-success"><i class="fas fa-plus"></i> New Rack</a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if rack_rows %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr><th>Rack</th><th>Site</th><th>Height</th><th>Used</th><th>Free</th><th>Servers</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for row in rack_rows %}
+                    <tr>
+                        <td><strong>{{ row.rack.name }}</strong></td>
+                        <td><a href="{% url 'inframan:site_detail' row.rack.site.pk %}">{{ row.rack.site.name }}</a></td>
+                        <td>{{ row.height }}U</td>
+                        <td><span class="badge bg-primary">{{ row.used }}U</span></td>
+                        <td><span class="badge bg-secondary">{{ row.free }}U</span></td>
+                        <td>{{ row.server_count }}</td>
+                        <td><a href="{% url 'inframan:rack_detail' row.rack.pk %}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i> View</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info m-3 mb-0">No racks yet. Add a Location of type "Rack" under a site.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

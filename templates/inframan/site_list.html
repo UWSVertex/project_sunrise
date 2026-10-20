@@ -1,0 +1,63 @@
+{% extends 'shiro/base.html' %}
+
+{% block title %}Sites - Infrastructure Management{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h1><i class="fas fa-building"></i> Sites</h1>
+    <div class="d-flex gap-2">
+        <a href="{% url 'inframan:region_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-globe"></i> Regions
+        </a>
+        <a href="{% url 'inframan:country_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-flag"></i> Countries
+        </a>
+        <a href="{% url 'inframan:site_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Site
+        </a>
+    </div>
+</div>
+
+{% if sites %}
+    <div class="row">
+        {% for site in sites %}
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <a href="{% url 'inframan:site_detail' site.pk %}" class="text-decoration-none">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ site.name }}</h5>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-barcode"></i> {{ site.code }}
+                            </p>
+                            <p class="mb-2">
+                                <strong>{{ site.city }}, {{ site.country.name }}</strong><br>
+                                <small class="text-muted">{{ site.country.region.name }}</small>
+                            </p>
+                            {% if site.contact_person %}
+                                <p class="mb-2">
+                                    <i class="fas fa-user"></i> {{ site.contact_person }}
+                                </p>
+                            {% endif %}
+                            <p>
+                                <span class="badge bg-info">{{ site.servers.count }} Servers</span>
+                                <span class="badge bg-secondary">{{ site.locations.count }} Locations</span>
+                            </p>
+                        </div>
+                    </a>
+                    <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Added {{ site.created_at|date:"M d, Y" }}</small>
+                        <a href="{% url 'inframan:site_edit' site.pk %}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle"></i> No sites yet.
+        <a href="{% url 'inframan:site_create' %}" class="alert-link">Create one now!</a>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,253 @@
+{% extends 'shiro/base.html' %}
+
+{% block title %}{{ project.name }} - Companion App{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1>{{ project.name }}</h1>
+        {% if project.client %}
+            <p class="text-muted mb-0">Client: <strong>{{ project.client }}</strong></p>
+        {% endif %}
+    </div>
+    <div class="btn-group">
+        <a href="{% url 'shiro:project_edit' project.pk %}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+        <a href="{% url 'shiro:project_delete' project.pk %}" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Delete
+        </a>
+    </div>
+</div>
+
+<!-- Status Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="stat-value">{{ project.progress }}%</div>
+            <div class="stat-label">Progress</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="stat-value">{{ project.tasks.count }}</div>
+            <div class="stat-label">Total Tasks</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <span class="badge bg-{% if project.status == 'in_progress' %}primary{% elif project.status == 'completed' %}success{% elif project.status == 'blocked' %}danger{% else %}secondary{% endif %}">
+                {{ project.get_status_display }}
+            </span>
+            <div class="stat-label mt-2">Status</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <span class="badge bg-{% if project.priority == 'critical' %}danger{% elif project.priority == 'high' %}warning{% elif project.priority == 'medium' %}info{% else %}secondary{% endif %}">
+                {{ project.get_priority_display }}
+            </span>
+            <div class="stat-label mt-2">Priority</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Project Details -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Project Details</h5>
+            </div>
+            <div class="card-body">
+                {% if project.description %}
+                    <div class="mb-3">
+                        <strong>Description:</strong>
+                        <p class="text-muted">{{ project.description|linebreaks }}</p>
+                    </div>
+                {% endif %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Owner:</strong> {% if project.owner %}{{ project.owner }}{% else %}<span class="text-muted">Not assigned</span>{% endif %}</p>
+                        <p><strong>Category:</strong> {% if project.category %}{{ project.category }}{% else %}<span class="text-muted">-</span>{% endif %}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Start Date:</strong> {% if project.start_date %}{{ project.start_date|date:"M d, Y" }}{% else %}<span class="text-muted">Not set</span>{% endif %}</p>
+                        <p><strong>Deadline:</strong> {% if project.deadline %}{{ project.deadline|date:"M d, Y" }}{% if is_overdue %}<span class="badge bg-danger">Overdue</span>{% elif days_until_deadline >= 0 %}<span class="badge bg-info">{{ days_until_deadline }} days left</span>{% endif %}{% else %}<span class="text-muted">Not set</span>{% endif %}</p>
+                    </div>
+                </div>
+                
+                {% if project.team_members %}
+                    <div class="mb-3">
+                        <strong>Team Members:</strong>
+                        <div class="mt-2">
+                            {% for member in project.team_list %}
+                                <span class="badge bg-primary">{{ member|striptags }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if project.tags %}
+                    <div class="mb-3">
+                        <strong>Tags:</strong>
+                        <div class="mt-2">
+                            {% for tag in project.tag_list %}
+                                <span class="badge bg-secondary">{{ tag|striptags }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line"></i> Progress</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Overall Progress</span>
+                    <strong>{{ project.progress }}%</strong>
+                </div>
+                <div class="progress" style="height: 25px;">
+                    <div class="progress-bar progress-bar-striped" role="progressbar" style="width: {{ project.progress }}%;" aria-valuenow="{{ project.progress }}" aria-valuemin="0" aria-valuemax="100">{{ project.progress }}%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Linked Servers Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-server"></i> Linked Servers ({{ project.servers.count }})</h5>
+                <a href="{% url 'shiro:project_edit' project.pk %}" class="btn btn-sm btn-success">
+                    <i class="fas fa-plus"></i> Add Server
+                </a>
+            </div>
+            <div class="card-body">
+                {% if project.servers.all %}
+                    <div class="list-group">
+                        {% for server in project.servers.all %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <a href="{% url 'inframan:server_detail' server.pk %}" class="text-decoration-none flex-grow-1">
+                                    <i class="fas fa-server"></i> <strong>{{ server.name }}</strong>
+                                    <small class="text-muted">{{ server.ip_address }} &middot; {{ server.get_environment_display }}</small>
+                                </a>
+                                <span class="badge bg-{% if server.status == 'active' %}success{% elif server.status == 'maintenance' %}warning{% else %}secondary{% endif %} me-2">{{ server.get_status_display }}</span>
+                                <form method="post" action="{% url 'shiro:project_remove_server' project.pk server.pk %}" onsubmit="return confirm('Remove {{ server.name }} from this project?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove from project">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No servers linked to this project yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Tasks Section -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-check-square"></i> Project Tasks</h5>
+                <a href="{% url 'shiro:task_create' %}?project={{ project.pk }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i> Add Task
+                </a>
+            </div>
+            <div class="card-body">
+                {% if tasks %}
+                    <div class="list-group">
+                        {% for task in tasks %}
+                            <a href="{% url 'shiro:task_detail' task.pk %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div>
+                                        <div class="d-flex gap-2">
+                                            {% if task.completed %}
+                                                <s class="text-muted">{{ task.title }}</s>
+                                            {% else %}
+                                                <strong>{{ task.title }}</strong>
+                                            {% endif %}
+                                            <span class="badge bg-{% if task.priority == 'critical' %}danger{% elif task.priority == 'high' %}warning{% elif task.priority == 'medium' %}info{% else %}secondary{% endif %}">{{ task.get_priority_display }}</span>
+                                        </div>
+                                        <small class="text-muted">Due: {{ task.due_date|date:"M d, Y" }}</small>
+                                    </div>
+                                    <span class="badge bg-{% if task.completed %}success{% elif task.status == 'in_progress' %}primary{% else %}secondary{% endif %}">
+                                        {{ task.get_status_display }}
+                                    </span>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-3">No tasks in this project yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Budget Card -->
+        {% if project.budget %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-dollar-sign"></i> Budget</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Total Budget:</strong> ${{ project.budget }}</p>
+                    <p><strong>Spent:</strong> ${{ project.spent }}</p>
+                    <p><strong>Remaining:</strong> <span class="badge bg-{% if budget_remaining >= 0 %}success{% else %}danger{% endif %}">{% if budget_remaining >= 0 %}${{ budget_remaining }}{% else %}Over by ${{ budget_remaining|floatformat:2 }}{% endif %}</span></p>
+                    
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small>Budget Used</small>
+                            <small>{{ budget_used|default:"0" }}%</small>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ budget_used|default:'0' }}%;" aria-valuenow="{{ budget_used|default:'0' }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Timeline Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar"></i> Timeline</h5>
+            </div>
+            <div class="card-body">
+                {% if project.start_date %}
+                    <p><strong>Started:</strong> <br>{{ project.start_date|date:"M d, Y" }}</p>
+                {% endif %}
+                
+                {% if project.deadline %}
+                    <p><strong>Deadline:</strong> <br>{{ project.deadline|date:"M d, Y" }}</p>
+                {% endif %}
+                
+                {% if project.completion_date %}
+                    <p><strong>Completed:</strong> <br>{{ project.completion_date|date:"M d, Y" }}</p>
+                {% endif %}
+                
+                <p><strong>Created:</strong> <br>{{ project.created_at|date:"M d, Y - g:i A" }}</p>
+            </div>
+        </div>
+
+        <!-- Quick Info -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list-check"></i> Quick Info</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Total Tasks:</strong> {{ project.tasks.count }}</p>
+                <p><strong>Completed Tasks:</strong> {{ project.tasks.filter__completed|default:"0" }}</p>
+                <p><strong>Overdue Tasks:</strong> {{ project.tasks.filter__due_date__lt|default:"0" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

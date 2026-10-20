@@ -1,0 +1,58 @@
+{% extends 'shiro/base.html' %}
+
+{% block title %}{{ title }} - Infrastructure Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ title }}</h1>
+</div>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-flag"></i> Country Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label"><i class="fas fa-tag"></i> Country Name *</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="invalid-feedback d-block">{% for e in form.name.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.code.id_for_label }}" class="form-label"><i class="fas fa-barcode"></i> Country Code *</label>
+                        {{ form.code }}
+                        <small class="form-text text-muted d-block mt-1">e.g., US, CR, UK</small>
+                        {% if form.code.errors %}<div class="invalid-feedback d-block">{% for e in form.code.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.region.id_for_label }}" class="form-label"><i class="fas fa-globe"></i> Region *</label>
+                        <div class="input-group">
+                            {{ form.region }}
+                            <a href="{% url 'inframan:region_create' %}?next={% filter urlencode %}{% url 'inframan:country_create' %}?next={{ next|urlencode }}{% endfilter %}" class="btn btn-outline-success" title="Add a new region">
+                                <i class="fas fa-plus"></i> New Region
+                            </a>
+                        </div>
+                        {% if form.region.errors %}<div class="invalid-feedback d-block">{% for e in form.region.errors %}{{ e }}{% endfor %}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mb-4">
+        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Save Country</button>
+        <a href="{% if next %}{{ next }}{% else %}{% url 'inframan:region_list' %}{% endif %}" class="btn btn-secondary btn-lg">
+            <i class="fas fa-arrow-left"></i> Cancel
+        </a>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,588 @@
+{% extends 'shiro/base.html' %}
+
+{% block title %}Dashboard - Companion App{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+</div>
+
+<!-- Top Stats Row - 4 Colored Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card stat-card-teal">
+            <div class="stat-card-header">
+                <div class="stat-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="stat-toggle">
+                    <i class="fas fa-circle"></i>
+                </div>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-number">{{ total_projects }}</div>
+                <div class="stat-label">Total Projects</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card stat-card-orange">
+            <div class="stat-card-header">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="stat-toggle">
+                    <i class="fas fa-circle"></i>
+                </div>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-number">{{ active_projects }}</div>
+                <div class="stat-label">Active Projects</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card stat-card-yellow">
+            <div class="stat-card-header">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-toggle">
+                    <i class="fas fa-circle"></i>
+                </div>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-number">{{ today_tasks.count }}</div>
+                <div class="stat-label">Today's Tasks</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card stat-card-purple">
+            <div class="stat-card-header">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-toggle">
+                    <i class="fas fa-circle"></i>
+                </div>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-number">{{ overdue_tasks.count }}</div>
+                <div class="stat-label">Overdue Tasks</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main Content Area (Left) -->
+    <div class="col-lg-8">
+        <!-- Overview Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Overall Insights</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="insight-box">
+                            <div class="insight-number">{{ total_incidents }}</div>
+                            <div class="insight-label">Total Incidents</div>
+                            <small class="text-muted">{{ critical_incidents }} critical</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="insight-circle">
+                            <svg width="120" height="120" class="donut-chart">
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="var(--dracula-selection)" stroke-width="10" stroke-dasharray="157 314" transform="rotate(-90 60 60)"></circle>
+                            </svg>
+                            <div class="circle-text">{{ open_incidents }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks & Incidents Row -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Tasks</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="big-number">{{ today_tasks.count }}</div>
+                        <small class="text-muted">Due Today</small>
+                        <a href="{% url 'shiro:task_list' %}" class="btn btn-sm btn-primary mt-3">View All</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Incidents</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="big-number">{{ critical_incidents }}</div>
+                        <small class="text-muted">Critical</small>
+                        <a href="{% url 'shiro:incident_list' %}" class="btn btn-sm btn-danger mt-3">View All</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Tasks Section -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Today's Tasks</h5>
+                <a href="{% url 'shiro:task_create' %}" class="btn btn-sm btn-primary">+ Add Task</a>
+            </div>
+            <div class="card-body">
+                {% if today_tasks %}
+                    <div class="task-list">
+                        {% for task in today_tasks %}
+                            <div class="task-item">
+                                <div class="task-checkbox">
+                                    <input type="checkbox" {% if task.completed %}checked{% endif %}>
+                                </div>
+                                <div class="task-info">
+                                    <div class="task-title">{{ task.title }}</div>
+                                    <small class="text-muted">{{ task.project.name|default:"No project" }}</small>
+                                </div>
+                                <div class="task-priority">
+                                    <span class="badge bg-{% if task.priority == 'critical' %}danger{% elif task.priority == 'high' %}warning{% else %}info{% endif %}">
+                                        {{ task.get_priority_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-3">No tasks for today. Great job! 🎉</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Sidebar - Key Metrics -->
+    <div class="col-lg-4">
+        <!-- Key Metrics Card -->
+        <div class="card mb-4 metrics-card">
+            <div class="card-header">
+                <h5 class="mb-0">Key Metrics</h5>
+            </div>
+            <div class="card-body">
+                <div class="metric-row">
+                    <span class="metric-label">Projects</span>
+                    <span class="metric-value">{{ total_projects }}</span>
+                </div>
+                <hr>
+                <div class="metric-row">
+                    <span class="metric-label">Active</span>
+                    <span class="metric-value">{{ active_projects }}</span>
+                </div>
+                <hr>
+                <div class="metric-row">
+                    <span class="metric-label">Open Incidents</span>
+                    <span class="metric-value">{{ open_incidents }}</span>
+                </div>
+                <hr>
+                <div class="metric-row">
+                    <span class="metric-label">Pending CRQs</span>
+                    <span class="metric-value">{{ pending_crqs }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Server Status Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Server Status</h5>
+            </div>
+            <div class="card-body">
+                {% if servers %}
+                    {% for server in servers %}
+                        <div class="server-item">
+                            <div class="server-status {% if server.status == 'online' %}online{% elif server.status == 'offline' %}offline{% else %}maintenance{% endif %}"></div>
+                            <div class="server-info">
+                                <div class="server-name">{{ server.name }}</div>
+                                <small class="server-ip">{{ server.ip_address }}</small>
+                            </div>
+                            <span class="badge bg-{% if server.status == 'online' %}success{% elif server.status == 'offline' %}danger{% else %}warning{% endif %}">
+                                {{ server.get_status_display }}
+                            </span>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-3">No servers registered</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Events Card -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Upcoming Events</h5>
+            </div>
+            <div class="card-body">
+                {% if upcoming_events %}
+                    <div class="event-list">
+                        {% for event in upcoming_events %}
+                            <div class="event-item">
+                                <div class="event-date">{{ event.date|date:"M d" }}</div>
+                                <div class="event-info">
+                                    <div class="event-title">{{ event.title }}</div>
+                                    <span class="badge bg-secondary bg-sm">{{ event.get_category_display }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-3">No upcoming events</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Dashboard-Specific Styles */
+    
+    /* Stat Cards with Colors */
+    .stat-card {
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: white;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+    
+    .stat-card-teal {
+        background: linear-gradient(135deg, #2c5f56 0%, #3a7a6d 100%);
+    }
+    
+    .stat-card-orange {
+        background: linear-gradient(135deg, #d97857 0%, #e89a75 100%);
+    }
+    
+    .stat-card-yellow {
+        background: linear-gradient(135deg, #d4a574 0%, #e6b88a 100%);
+    }
+    
+    .stat-card-purple {
+        background: linear-gradient(135deg, #8b7fb4 0%, #a89fc8 100%);
+    }
+    
+    .stat-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-icon {
+        font-size: 1.5rem;
+        opacity: 0.9;
+    }
+    
+    .stat-toggle {
+        font-size: 0.8rem;
+        opacity: 0.7;
+        cursor: pointer;
+    }
+    
+    .stat-card-body {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.85;
+        margin-top: 0.5rem;
+    }
+    
+    /* Overview Section */
+    .insight-box {
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .insight-number {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--dracula-cyan);
+    }
+    
+    body.light-mode .insight-number {
+        color: #f5822a;
+    }
+    
+    .insight-label {
+        color: var(--dracula-comment);
+        margin-top: 0.5rem;
+    }
+    
+    /* Donut Chart */
+    .insight-circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        height: 150px;
+    }
+    
+    .donut-chart {
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+    
+    .circle-text {
+        position: absolute;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--dracula-cyan);
+    }
+    
+    /* Big Number Cards */
+    .big-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--dracula-cyan);
+        line-height: 1;
+    }
+    
+    body.light-mode .big-number {
+        color: #f5822a;
+    }
+    
+    /* Task List */
+    .task-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .task-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem;
+        background-color: var(--dracula-selection);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    body.light-mode .task-item {
+        background-color: #f7ede1;
+    }
+    
+    .task-item:hover {
+        background-color: var(--dracula-purple);
+        color: #1e1e2e;
+    }
+    
+    body.light-mode .task-item:hover {
+        color: #1e1e2e;
+    }
+    
+    .task-checkbox {
+        flex-shrink: 0;
+    }
+    
+    .task-checkbox input {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+    
+    .task-info {
+        flex-grow: 1;
+    }
+    
+    .task-title {
+        font-weight: 500;
+    }
+    
+    .task-priority {
+        flex-shrink: 0;
+    }
+    
+    /* Metrics Card */
+    .metrics-card .metric-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+    }
+    
+    .metric-label {
+        color: var(--dracula-comment);
+        font-size: 0.9rem;
+    }
+    
+    .metric-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--dracula-cyan);
+    }
+    
+    body.light-mode .metric-value {
+        color: #f5822a;
+    }
+    
+    /* Server Status */
+    .server-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        background-color: var(--dracula-selection);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    body.light-mode .server-item {
+        background-color: #f7ede1;
+    }
+    
+    .server-status {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    
+    .server-status.online {
+        background-color: var(--dracula-green);
+        box-shadow: 0 0 8px var(--dracula-green);
+    }
+    
+    .server-status.offline {
+        background-color: var(--dracula-red);
+    }
+    
+    .server-status.maintenance {
+        background-color: var(--dracula-yellow);
+    }
+    
+    .server-info {
+        flex-grow: 1;
+    }
+    
+    .server-name {
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    
+    .server-ip {
+        color: var(--dracula-comment);
+    }
+    
+    /* Events List */
+    .event-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .event-item {
+        display: flex;
+        gap: 1rem;
+        padding: 0.75rem;
+        background-color: var(--dracula-selection);
+        border-radius: 8px;
+    }
+    
+    body.light-mode .event-item {
+        background-color: #f7ede1;
+    }
+    
+    .event-date {
+        font-weight: 700;
+        color: var(--dracula-cyan);
+        min-width: 50px;
+    }
+    
+    body.light-mode .event-date {
+        color: #f5822a;
+    }
+    
+    .event-info {
+        flex-grow: 1;
+    }
+    
+    .event-title {
+        font-weight: 500;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Force black text across the dashboard for readability, in both themes */
+    .main-content h1,
+    .main-content h2,
+    .main-content h3,
+    .main-content h4,
+    .main-content h5,
+    .main-content h6,
+    .main-content p,
+    .main-content span,
+    .main-content a,
+    .main-content div,
+    .main-content li,
+    .main-content label,
+    .main-content td,
+    .main-content th,
+    .insight-number,
+    .insight-label,
+    .big-number,
+    .metric-label,
+    .metric-value,
+    .task-title,
+    .server-name,
+    .server-ip,
+    .event-date,
+    .event-title {
+        color: #000000 !important;
+    }
+
+    /* Stat cards keep white text; their gradient backgrounds are too saturated for black */
+    .stat-card,
+    .stat-card * {
+        color: #ffffff !important;
+    }
+
+    /* Card headers keep their own designed contrast (white on mauve/pink) */
+    .card-header,
+    .card-header * {
+        color: inherit !important;
+    }
+
+    /* Keep links visually distinct even though they're forced black */
+    .main-content a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}

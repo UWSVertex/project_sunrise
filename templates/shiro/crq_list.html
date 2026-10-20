@@ -1,0 +1,50 @@
+{% extends 'shiro/base.html' %}
+
+{% block title %}Change Requests - Companion App{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h1><i class="fas fa-exchange-alt"></i> Change Requests</h1>
+    <a href="{% url 'shiro:crq_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> New CRQ
+    </a>
+</div>
+
+{% if crqs %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Ticket ID</th>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Type</th>
+                    <th>Risk Level</th>
+                    <th>Assigned To</th>
+                    <th>Requested Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for crq in crqs %}
+                    <tr>
+                        <td><strong>{{ crq.ticket_id }}</strong></td>
+                        <td>{{ crq.title }}</td>
+                        <td><span class="badge bg-{% if crq.status == 'completed' %}success{% elif crq.status == 'rejected' or crq.status == 'cancelled' %}danger{% else %}primary{% endif %}">{{ crq.get_status_display }}</span></td>
+                        <td><span class="badge bg-info">{{ crq.get_crq_type_display }}</span></td>
+                        <td><span class="badge bg-{% if crq.risk_level == 'critical' %}danger{% elif crq.risk_level == 'high' %}warning{% else %}info{% endif %}">{{ crq.get_risk_level_display }}</span></td>
+                        <td>{{ crq.assigned_to|default:"-" }}</td>
+                        <td>{{ crq.requested_date|date:"M d, Y - g:i A" }}</td>
+                        <td><a href="{% url 'shiro:crq_detail' crq.pk %}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle"></i> No change requests yet.
+        <a href="{% url 'shiro:crq_create' %}" class="alert-link">Create one now!</a>
+    </div>
+{% endif %}
+{% endblock %}

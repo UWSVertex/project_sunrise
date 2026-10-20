@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Companion App{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* ===== DRACULA THEME COLORS ===== */
+        :root {
+            /* Warm Orange Light Mode (dashboard reference) */
+            --dracula-background-light: #f7ede1;
+            --dracula-foreground-light: #2d2a26;
+            --dracula-selection-light: #ffffff;
+            --dracula-comment-light: #8a8378;
+            --dracula-red-light: #e5484d;
+            --dracula-orange-light: #f5822a;
+            --dracula-yellow-light: #d4a017;
+            --dracula-green-light: #2fae5a;
+            --dracula-purple-light: #f5822a;
+            --dracula-cyan-light: #f5822a;
+            --dracula-pink-light: #f5822a;
+            
+            /* Catppuccin Mocha (Dark Mode, Default) */
+            --dracula-background: #1e1e2e;
+            --dracula-foreground: #cdd6f4;
+            --dracula-selection: #313244;
+            --dracula-comment: #6c7086;
+            --dracula-red: #f38ba8;
+            --dracula-orange: #fab387;
+            --dracula-yellow: #f9e2af;
+            --dracula-green: #a6e3a1;
+            --dracula-purple: #cba6f7;
+            --dracula-cyan: #89dceb;
+            --dracula-pink: #f5c2e7;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dracula-background);
+            color: var(--dracula-foreground);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        body.light-mode {
+            background-color: var(--dracula-background-light);
+            color: var(--dracula-foreground-light);
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--dracula-purple) 0%, var(--dracula-pink) 100%);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+        
+        body.light-mode .navbar {
+            background: linear-gradient(135deg, #f5822a 0%, #d4a017 100%);
+        }
+        
+        .navbar .nav-link,
+        .navbar .navbar-toggler-icon {
+            color: #1e1e2e !important;
+        }
+        
+        body.light-mode .navbar .nav-link {
+            color: #ffffff !important;
+        }
+        
+        .navbar-toggler {
+            border-color: rgba(30, 30, 46, 0.4);
+        }
+        
+        .navbar-toggler-icon {
+            filter: none;
+            --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(30, 30, 46, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        
+        body.light-mode .navbar-toggler-icon {
+            --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        
+        body.light-mode .navbar-toggler {
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #1e1e2e !important;
+        }
+        
+        body.light-mode .navbar-brand {
+            color: #ffffff !important;
+        }
+        
+        .sidebar {
+            background-color: var(--dracula-selection);
+            border-right: 1px solid var(--dracula-comment);
+            min-height: calc(100vh - 56px);
+            max-height: calc(100vh - 56px);
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 56px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+        
+        body.light-mode .sidebar {
+            background-color: #f7ede1;
+            border-right: 1px solid #e8dcc8;
+        }
+        
+        /* Sidebar Scrollbar - Dark Mode */
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: var(--dracula-selection);
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--dracula-purple);
+            border-radius: 4px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--dracula-pink);
+        }
+        
+        /* Sidebar Scrollbar - Light Mode */
+        body.light-mode .sidebar::-webkit-scrollbar-track {
+            background: #f7ede1;
+        }
+        
+        body.light-mode .sidebar::-webkit-scrollbar-thumb {
+            background: #e8dcc8;
+        }
+        
+        body.light-mode .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #d8c8ac;
+        }
+        
+        /* Sidebar Accordion/Collapsible Sections */
+        .sidebar-section {
+            margin: 0.5rem 0;
+        }
+        
+        .sidebar-toggle {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--dracula-foreground);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        body.light-mode .sidebar-toggle {
+            color: var(--dracula-foreground-light);
+        }
+        
+        .sidebar-toggle:hover {
+            background-color: var(--dracula-purple);
+            color: #1e1e2e;
+            padding-left: 1.5rem;
+        }
+        
+        body.light-mode .sidebar-toggle:hover {
+            color: #ffffff;
+        }
+        
+        body.light-mode .sidebar-toggle:hover {
+            background-color: #fde8d4;
+        }
+        
+        .sidebar-toggle:focus {
+            outline: none;
+            box-shadow: inset 0 0 0 2px var(--dracula-cyan);
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            font-size: 0.75rem;
+        }
+        
+        .sidebar-toggle[aria-expanded="true"] .toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        .nav-sub-link {
+            padding-left: 3rem !important;
+            font-size: 0.9rem;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-sub-link:hover {
+            background-color: var(--dracula-purple);
+            color: #1e1e2e;
+            border-left-color: var(--dracula-cyan);
+        }
+        
+        body.light-mode .nav-sub-link:hover {
+            color: #ffffff;
+        }
+        
+        body.light-mode .nav-sub-link:hover {
+            background-color: #fde8d4;
+            color: var(--dracula-foreground-light);
+        }
+        
+        .nav-sub-link.active {
+            background-color: var(--dracula-purple);
+            color: #1e1e2e;
+            border-left-color: var(--dracula-cyan);
+        }
+        
+        body.light-mode .nav-sub-link.active {
+            color: #ffffff;
+        }
+        
+        body.light-mode .nav-sub-link.active {
+            background-color: #fde8d4;
+            color: var(--dracula-foreground-light);
+        }
+        
+        /* Smooth collapse animation */
+        .collapse {
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease;
+        }
+        
+        .collapse:not(.show) {
+            display: none;
+        }
+        
+        .nav-link {
+            color: var(--dracula-foreground);
+            padding: 0.75rem 1.5rem;
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        body.light-mode .nav-link {
+            color: var(--dracula-foreground-light);
+        }
+        
+        .nav-link:hover {
+            background-color: var(--dracula-purple);
+            color: #1e1e2e;
+            border-left-color: var(--dracula-cyan);
+        }
+        
+        body.light-mode .nav-link:hover {
+            color: #ffffff;
+        }
+        
+        body.light-mode .nav-link:hover {
+            background-color: #fde8d4;
+            color: var(--dracula-foreground-light);
+            border-left-color: #f5822a;
+        }
+        
+        .nav-link.active {
+            background-color: var(--dracula-purple);
+            color: #1e1e2e;
+            border-left-color: var(--dracula-cyan);
+            font-weight: 600;
+        }
+        
+        body.light-mode .nav-link.active {
+            color: #ffffff;
+        }
+        
+        body.light-mode .nav-link.active {
+            background-color: #fde8d4;
+            color: var(--dracula-foreground-light);
+            border-left-color: #f5822a;
+        }
+        
+        .main-content {
+            padding: 2rem;
+            background-color: var(--dracula-background);
+            color: var(--dracula-foreground);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        body.light-mode .main-content {
+            background-color: var(--dracula-background-light);
+            color: var(--dracula-foreground-light);
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--dracula-purple);
+        }
+        
+        .page-header h1 {
+            color: var(--dracula-cyan);
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        body.light-mode .page-header h1 {
+            color: #f5822a;
+        }
+        
+        .card {
+            border: 1px solid var(--dracula-selection);
+            background-color: var(--dracula-selection);
+            color: var(--dracula-foreground);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+        
+        body.light-mode .card {
+            border: 1px solid #e8dcc8;
+            background-color: #ffffff;
+            color: var(--dracula-foreground-light);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            transform: translateY(-2px);
+        }
+        
+        body.light-mode .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        
+        .card-header {
+            background-color: var(--dracula-purple);
+            color: #1e1e2e;
+            border-bottom: 1px solid var(--dracula-pink);
+            font-weight: 600;
+        }
+        
+        body.light-mode .card-header {
+            background-color: #f5822a;
+            color: #ffffff;
+            border-bottom: 1px solid #d4a017;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dracula-cyan);
+        }
+        
+        body.light-mode .stat-card .stat-value {
+            color: #f5822a;
+        }
+        
+        .stat-card .stat-label {
+            color: var(--dracula-comment);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        .badge {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: var(--dracula-purple);
+            border-color: var(--dracula-purple);
+            color: #1e1e2e;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--dracula-pink);
+            border-color: var(--dracula-pink);
+            color: #1e1e2e;
+        }
+        
+        body.light-mode .btn-primary,
+        body.light-mode .btn-primary:hover {
+            color: #ffffff;
+        }
+        
+        .form-control,
+        .form-select {
+            background-color: var(--dracula-selection);
+            color: var(--dracula-foreground);
+            border: 1px solid var(--dracula-comment);
+        }
+        
+        body.light-mode .form-control,
+        body.light-mode .form-select {
+            background-color: #ffffff;
+            color: var(--dracula-foreground-light);
+            border: 1px solid #d8c8ac;
+        }
+        
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--dracula-cyan);
+            box-shadow: 0 0 0 0.2rem rgba(139, 233, 253, 0.25);
+            background-color: var(--dracula-selection);
+            color: var(--dracula-foreground);
+        }
+        
+        body.light-mode .form-control:focus,
+        body.light-mode .form-select:focus {
+            background-color: #ffffff;
+            color: var(--dracula-foreground-light);
+        }
+        
+        .alert {
+            border: none;
+            border-radius: 0.5rem;
+            border-left: 4px solid var(--dracula-pink);
+        }
+        
+        .alert-success {
+            background-color: rgba(80, 250, 123, 0.1);
+            color: var(--dracula-green);
+        }
+        
+        .alert-danger {
+            background-color: rgba(255, 85, 85, 0.1);
+            color: var(--dracula-red);
+        }
+        
+        .alert-warning {
+            background-color: rgba(241, 250, 140, 0.1);
+            color: var(--dracula-orange);
+        }
+        
+        .alert-info {
+            background-color: rgba(139, 233, 253, 0.1);
+            color: var(--dracula-cyan);
+        }
+        
+        body.light-mode .alert-success {
+            background-color: #dff3e3;
+            color: #2fae5a;
+        }
+        
+        body.light-mode .alert-danger {
+            background-color: #fbe1d8;
+            color: #e5484d;
+        }
+        
+        body.light-mode .alert-info {
+            background-color: #fdeedc;
+            color: #f5822a;
+        }
+        
+        .progress {
+            height: 0.5rem;
+            border-radius: 0.25rem;
+            background-color: var(--dracula-selection);
+        }
+        
+        body.light-mode .progress {
+            background-color: #e8dcc8;
+        }
+        
+        .progress-bar {
+            background-color: var(--dracula-cyan);
+        }
+        
+        .table {
+            color: var(--dracula-foreground);
+        }
+        
+        body.light-mode .table {
+            color: var(--dracula-foreground-light);
+        }
+        
+        .table-light {
+            background-color: var(--dracula-selection);
+        }
+        
+        body.light-mode .table-light {
+            background-color: #f7ede1;
+        }
+        
+        .list-group-item {
+            background-color: var(--dracula-selection);
+            color: var(--dracula-foreground);
+            border: 1px solid var(--dracula-comment);
+        }
+        
+        body.light-mode .list-group-item {
+            background-color: #ffffff;
+            color: var(--dracula-foreground-light);
+            border: 1px solid #e8dcc8;
+        }
+        
+        .list-group-item-action:hover {
+            background-color: var(--dracula-purple);
+            color: #1e1e2e;
+        }
+        
+        body.light-mode .list-group-item-action:hover {
+            background-color: #fde8d4;
+            color: var(--dracula-foreground-light);
+        }
+        
+        /* Theme Toggle Button */
+        .theme-toggle {
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            color: #1e1e2e;
+        }
+        
+        body.light-mode .theme-toggle {
+            color: #ffffff;
+        }
+        
+        .theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="dark-mode">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'shiro:dashboard' %}">
+                <i class="fas fa-tasks"></i> Companion
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'shiro:dashboard' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link theme-toggle" id="themeToggle" title="Toggle theme">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="/admin/">Admin Panel</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 sidebar">
+                <div class="nav flex-column">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'shiro:dashboard' %}">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </a>
+                    
+                    <hr class="my-2">
+                    
+                    <!-- Projects Section -->
+                    <div class="sidebar-section">
+                        <button class="sidebar-toggle" data-bs-toggle="collapse" data-bs-target="#projectsMenu" aria-expanded="false" aria-controls="projectsMenu">
+                            <span class="section-title">
+                                <i class="fas fa-folder"></i> Projects
+                            </span>
+                            <i class="fas fa-chevron-down toggle-icon"></i>
+                        </button>
+                        <div class="collapse" id="projectsMenu">
+                            <a class="nav-link nav-sub-link" href="{% url 'shiro:project_list' %}">
+                                <i class="fas fa-list"></i> All Projects
+                            </a>
+                            <a class="nav-link nav-sub-link" href="{% url 'shiro:project_create' %}">
+                                <i class="fas fa-plus"></i> New Project
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-2">
+                    
+                    <!-- Tasks Section -->
+                    <div class="sidebar-section">
+                        <button class="sidebar-toggle" data-bs-toggle="collapse" data-bs-target="#tasksMenu" aria-expanded="false" aria-controls="tasksMenu">
+                            <span class="section-title">
+                                <i class="fas fa-check-square"></i> Tasks
+                            </span>
+                            <i class="fas fa-chevron-down toggle-icon"></i>
+                        </button>
+                        <div class="collapse" id="tasksMenu">
+                            <a class="nav-link nav-sub-link" href="{% url 'shiro:task_list' %}">
+                                <i class="fas fa-list"></i> All Tasks
+                            </a>
+                            <a class="nav-link nav-sub-link" href="{% url 'shiro:task_create' %}">
+                                <i class="fas fa-plus"></i> New Task
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-2">
+                    
+                    <!-- Events Section -->
+                    <div class="sidebar-section">
+                        <button class="sidebar-toggle" data-bs-toggle="collapse" data-bs-target="#eventsMenu" aria-expanded="false" aria-controls="eventsMenu">
+                            <span class="section-title">
+                                <i class="fas fa-calendar"></i> Events
+                            </span>
+                            <i class="fas fa-chevron-down toggle-icon"></i>
+                        </button>
+                        <div class="collapse" id="eventsMenu">
+                            <a class="nav-link nav-sub-link" href="{% url 'shiro:event_list' %}">
+                                <i class="fas fa-list"></i> All Events
+                            </a>
+                            <a class="nav-link nav-sub-link" href="{% url 'shiro:event_create' %}">
+                                <i class="fas fa-plus"></i> New Event
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-2">
+                    
+                    <!-- Incidents Section -->
+                    <div class="sidebar-section">
+                        <button class="sidebar-toggle" data-bs-toggle="collapse" data-bs-target="#incidentsMenu" aria-expanded="false" aria-controls="incidentsMenu">
+                            <span class="section-title">
+                                <i class="fas fa-exclamation-circle"></i> Incidents
+                            </span>
+                            <i class="fas fa-chevron-down toggle-icon"></i>
+                        </button>
+                        <div class="collapse" id="incidentsMenu">
+                            <a class="nav-link nav-sub-link" href="{% url 'shiro:incident_list' %}">
+                                <i class="fas fa-list"></i> All Incidents
+                            </a>
+                            <a class="nav-link nav-sub-link" href="{% url 'shiro:incident_create' %}">
+                                <i class="fas fa-plus"></i> New Incident
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-2">
+                    
+                    <!-- Change Requests Section -->
+                    <div class="sidebar-section">
+                        <button class="sidebar-toggle" data-bs-toggle="collapse" data-bs-target="#crqMenu" aria-expanded="false" aria-controls="crqMenu">
+                            <span class="section-title">
+                                <i class="fas fa-exchange-alt"></i> Change Requests
+                            </span>
+                            <i class="fas fa-chevron-down toggle-icon"></i>
+                        </button>
+                        <div class="collapse" id="crqMenu">
+                            <a class="nav-link nav-sub-link" href="{% url 'shiro:crq_list' %}">
+                                <i class="fas fa-list"></i> All CRQs
+                            </a>
+                            <a class="nav-link nav-sub-link" href="{% url 'shiro:crq_create' %}">
+                                <i class="fas fa-plus"></i> New CRQ
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-2">
+                    
+                    <!-- Infrastructure Section -->
+                    <div class="sidebar-section">
+                        <button class="sidebar-toggle" data-bs-toggle="collapse" data-bs-target="#infrastructureMenu" aria-expanded="false" aria-controls="infrastructureMenu">
+                            <span class="section-title">
+                                <i class="fas fa-building"></i> Infrastructure
+                            </span>
+                            <i class="fas fa-chevron-down toggle-icon"></i>
+                        </button>
+                        <div class="collapse" id="infrastructureMenu">
+                            <a class="nav-link nav-sub-link" href="{% url 'inframan:dashboard' %}">
+                                <i class="fas fa-chart-line"></i> Dashboard
+                            </a>
+                            <a class="nav-link nav-sub-link" href="{% url 'inframan:server_list' %}">
+                                <i class="fas fa-server"></i> Servers
+                            </a>
+                            <a class="nav-link nav-sub-link" href="{% url 'inframan:rack_list' %}">
+                                <i class="fas fa-layer-group"></i> Racks
+                            </a>
+                            <a class="nav-link nav-sub-link" href="{% url 'inframan:site_list' %}">
+                                <i class="fas fa-map-marker-alt"></i> Sites
+                            </a>
+                            <a class="nav-link nav-sub-link" href="{% url 'inframan:maintenance_list' %}">
+                                <i class="fas fa-history"></i> Maintenance
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 main-content">
+                <!-- Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Theme Toggle Script -->
+    <script>
+        // Initialize theme from localStorage
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark-mode';
+            document.body.classList.remove('dark-mode', 'light-mode');
+            document.body.classList.add(savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+        
+        // Update theme icon
+        function updateThemeIcon(theme) {
+            const themeToggle = document.getElementById('themeToggle');
+            if (theme === 'dark-mode') {
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                themeToggle.title = 'Switch to light mode';
+            } else {
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                themeToggle.title = 'Switch to dark mode';
+            }
+        }
+        
+        // Toggle theme
+        document.getElementById('themeToggle').addEventListener('click', function(e) {
+            e.preventDefault();
+            const currentTheme = document.body.classList.contains('dark-mode') ? 'dark-mode' : 'light-mode';
+            const newTheme = currentTheme === 'dark-mode' ? 'light-mode' : 'dark-mode';
+            
+            document.body.classList.remove(currentTheme);
+            document.body.classList.add(newTheme);
+            
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initTheme);
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

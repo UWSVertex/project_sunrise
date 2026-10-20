@@ -1,0 +1,156 @@
+{% extends 'shiro/base.html' %}
+
+{% block title %}Servers - Infrastructure Management{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h1><i class="fas fa-server"></i> Server Inventory</h1>
+    <div class="d-flex gap-2">
+        <a href="{% url 'inframan:server_import_upload' %}" class="btn btn-outline-success">
+            <i class="fas fa-file-excel"></i> Import from Excel
+        </a>
+        <a href="{% url 'inframan:server_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Server
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Filters</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- All Status --</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                    <option value="maintenance" {% if status_filter == 'maintenance' %}selected{% endif %}>Maintenance</option>
+                    <option value="decommissioned" {% if status_filter == 'decommissioned' %}selected{% endif %}>Decommissioned</option>
+                    <option value="spare" {% if status_filter == 'spare' %}selected{% endif %}>Spare</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="environment" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- All Environments --</option>
+                    <option value="production" {% if environment_filter == 'production' %}selected{% endif %}>Production</option>
+                    <option value="staging" {% if environment_filter == 'staging' %}selected{% endif %}>Staging</option>
+                    <option value="development" {% if environment_filter == 'development' %}selected{% endif %}>Development</option>
+                    <option value="testing" {% if environment_filter == 'testing' %}selected{% endif %}>Testing</option>
+                    <option value="spare" {% if environment_filter == 'spare' %}selected{% endif %}>Spare</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="site" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- All Sites --</option>
+                    {% for site in sites %}
+                        <option value="{{ site.id }}" {% if site_filter|stringformat:"s" == site.id|stringformat:"s" %}selected{% endif %}>{{ site.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Servers Table -->
+{% if servers %}
+<form method="post" action="{% url 'inframan:server_bulk_delete' %}" id="bulkDeleteForm">
+    {% csrf_token %}
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 40px;"><input type="checkbox" id="selectAllServers" class="form-check-input"></th>
+                        <th>Name</th>
+                        <th>IP Address</th>
+                        <th>Site</th>
+                        <th>OS</th>
+                        <th>CPU</th>
+                        <th>Memory</th>
+                        <th>Environment</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for server in servers %}
+                        <tr>
+                            <td><input type="checkbox" name="server_ids" value="{{ server.pk }}" class="form-check-input server-row-checkbox"></td>
+                            <td><strong>{{ server.name }}</strong></td>
+                            <td><code>{{ server.ip_address }}</code></td>
+                            <td>{{ server.site.name }}</td>
+                            <td>{{ server.os|default:"—"|truncatewords:2 }}</td>
+                            <td>{{ server.cpu_cores|default:"—" }}{% if server.cpu_cores %}C{% endif %}{% if server.cpu_threads %}/{{ server.cpu_threads }}T{% endif %}</td>
+                            <td>{{ server.memory_gb|default:"—" }}{% if server.memory_gb %}GB{% endif %}</td>
+                            <td>
+                                <span class="badge bg-{% if server.environment == 'production' %}danger{% elif server.environment == 'staging' %}warning{% elif server.environment == 'development' %}info{% else %}secondary{% endif %}">
+                                    {{ server.get_environment_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if server.status == 'active' %}success{% elif server.status == 'maintenance' %}warning{% elif server.status == 'decommissioned' %}danger{% else %}secondary{% endif %}">
+                                    {{ server.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'inframan:server_detail' server.pk %}" class="btn btn-sm btn-info" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'inframan:server_edit' server.pk %}" class="btn btn-sm btn-warning" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'inframan:server_delete' server.pk %}" class="btn btn-sm btn-danger" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 mt-3 mb-4">
+        <span class="text-muted small"><span id="selectedServerCount">0</span> selected</span>
+        <button type="submit" id="bulkDeleteBtn" class="btn btn-danger" disabled
+                onclick="return confirm('Delete the selected server(s)? This cannot be undone.');">
+            <i class="fas fa-trash"></i> Delete Selected
+        </button>
+    </div>
+</form>
+
+<script>
+(function () {
+    var selectAll = document.getElementById('selectAllServers');
+    var rowCheckboxes = document.querySelectorAll('.server-row-checkbox');
+    var countEl = document.getElementById('selectedServerCount');
+    var deleteBtn = document.getElementById('bulkDeleteBtn');
+
+    function refresh() {
+        var checked = document.querySelectorAll('.server-row-checkbox:checked').length;
+        countEl.textContent = checked;
+        deleteBtn.disabled = checked === 0;
+        if (selectAll) {
+            selectAll.checked = checked > 0 && checked === rowCheckboxes.length;
+        }
+    }
+
+    rowCheckboxes.forEach(function (cb) { cb.addEventListener('change', refresh); });
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            rowCheckboxes.forEach(function (cb) { cb.checked = selectAll.checked; });
+            refresh();
+        });
+    }
+    refresh();
+})();
+</script>
+{% else %}
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle"></i> No servers found.
+        <a href="{% url 'inframan:server_create' %}" class="alert-link">Add your first server!</a>
+    </div>
+{% endif %}
+{% endblock %}

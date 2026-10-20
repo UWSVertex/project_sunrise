@@ -1,0 +1,66 @@
+{% extends 'shiro/base.html' %}
+
+{% block title %}{{ server.name }} - Companion App{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <h1>{{ server.name }}</h1>
+    <div class="btn-group">
+        <a href="{% url 'shiro:server_edit' server.pk %}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+        <a href="{% url 'shiro:server_delete' server.pk %}" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Delete
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-server"></i> Server Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>IP Address:</strong> <code>{{ server.ip_address }}</code></p>
+                <p><strong>Status:</strong> 
+                    <span class="badge bg-{% if server.status == 'online' %}success{% elif server.status == 'offline' %}danger{% else %}warning{% endif %}">
+                        {{ server.get_status_display }}
+                    </span>
+                </p>
+                <p><strong>Last Checked:</strong> 
+                    {% if server.last_checked %}
+                        {{ server.last_checked|date:"M d, Y - g:i A" }}
+                    {% else %}
+                        <span class="text-muted">Never checked</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clipboard"></i> Notes</h5>
+            </div>
+            <div class="card-body">
+                {% if server.notes %}
+                    <p>{{ server.notes|linebreaks }}</p>
+                {% else %}
+                    <p class="text-muted">No notes</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-history"></i> Metadata</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Created:</strong> {{ server.created_at|date:"M d, Y - g:i A" }}</p>
+        <p><strong>Last Updated:</strong> {{ server.updated_at|date:"M d, Y - g:i A" }}</p>
+    </div>
+</div>
+{% endblock %}

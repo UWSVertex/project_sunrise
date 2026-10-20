@@ -1,0 +1,268 @@
+{% extends 'shiro/base.html' %}
+
+{% block title %}{{ server.name }} - Server Details{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1>{{ server.name }}</h1>
+        <p class="text-muted mb-0"><code>{{ server.ip_address }}</code></p>
+    </div>
+    <div class="btn-group">
+        <a href="{% url 'inframan:server_edit' server.pk %}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+        <a href="{% url 'inframan:server_delete' server.pk %}" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Delete
+        </a>
+    </div>
+</div>
+
+<!-- Status Badges -->
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <span class="badge bg-{% if server.status == 'active' %}success{% elif server.status == 'maintenance' %}warning{% else %}secondary{% endif %} me-2" style="font-size: 1rem;">
+            {{ server.get_status_display }}
+        </span>
+        <span class="badge bg-{% if server.environment == 'production' %}danger{% elif server.environment == 'staging' %}warning{% else %}info{% endif %} me-2" style="font-size: 1rem;">
+            {{ server.get_environment_display }}
+        </span>
+        <span class="badge bg-secondary" style="font-size: 1rem;">
+            {{ server.get_server_type_display }}
+        </span>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Network Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-network-wired"></i> Network Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>IP Address:</strong> <code>{{ server.ip_address }}</code></p>
+                        <p><strong>Hostname:</strong> <code>{{ server.hostname|default:"-" }}</code></p>
+                        <p><strong>MAC Address:</strong> <code>{{ server.mac_address|default:"-" }}</code></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Network Interfaces:</strong> {{ server.network_interfaces }}</p>
+                        {% if server.idrac_ip %}
+                            <p><strong>iDRAC IP:</strong> <code>{{ server.idrac_ip }}</code></p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hardware Specifications -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-microchip"></i> Hardware Specifications</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Processor</h6>
+                        <p>
+                            <strong>{{ server.cpu_model }}</strong><br>
+                            <small class="text-muted">{{ server.cpu_cores }} Cores / {{ server.cpu_threads }} Threads</small>
+                        </p>
+                        
+                        <h6 class="mt-3">Memory</h6>
+                        <p>
+                            <strong>{{ server.memory_gb }} GB RAM</strong>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Storage</h6>
+                        <p>
+                            <strong>{{ server.storage_total_gb }} GB</strong> ({{ server.get_storage_type_display }})<br>
+                            <small class="text-muted">{{ server.storage_info }}</small>
+                        </p>
+                        
+                        <h6 class="mt-3">Power</h6>
+                        <p>
+                            <strong>{{ server.power_supply_count }} Power Supply(ies)</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location & Site -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> Location</h5>
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>Site:</strong> 
+                    <a href="{% url 'inframan:site_detail' server.site.pk %}">{{ server.site.name }}</a>
+                </p>
+                <p>
+                    <strong>Country:</strong> {{ server.site.country.name }} ({{ server.site.country.region.name }})
+                </p>
+                <p>
+                    <strong>City:</strong> {{ server.site.city }}
+                </p>
+                {% if server.location %}
+                    <p>
+                        <strong>Location:</strong> {{ server.location.name }}
+                        <span class="badge bg-info">{{ server.location.get_location_type_display }}</span>
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Operating System -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-laptop"></i> Operating System</h5>
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>OS:</strong> {{ server.os|default:"-" }}<br>
+                    <strong>Version:</strong> {{ server.os_version|default:"-" }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Manufacturer & Model -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Server Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Manufacturer:</strong> {{ server.manufacturer }}</p>
+                        <p><strong>Model:</strong> {{ server.model }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Serial Number:</strong> <code>{{ server.serial_number|default:"-" }}</code></p>
+                        <p><strong>Asset Tag:</strong> {{ server.asset_tag|default:"-" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Lifecycle -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar"></i> Lifecycle</h5>
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>Purchase Date:</strong><br>
+                    {{ server.purchase_date|date:"M d, Y"|default:"-" }}
+                </p>
+                <hr>
+                <p>
+                    <strong>Warranty Expiry:</strong><br>
+                    {{ server.warranty_expiry|date:"M d, Y"|default:"-" }}
+                </p>
+                <hr>
+                <p>
+                    <strong>Last Maintenance:</strong><br>
+                    {{ server.last_maintenance|date:"M d, Y"|default:"-" }}
+                </p>
+                {% if server.decommission_date %}
+                    <hr>
+                    <p class="text-danger">
+                        <strong>Decommissioned:</strong><br>
+                        {{ server.decommission_date|date:"M d, Y" }}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Assignment -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user"></i> Assignment</h5>
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>Assigned To:</strong><br>
+                    {{ server.assigned_to|default:"Unassigned" }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Maintenance History -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Maintenance History</h5>
+            </div>
+            <div class="card-body">
+                {% if maintenance_records %}
+                    <div class="maintenance-list small">
+                        {% for record in maintenance_records|slice:":5" %}
+                            <div class="mb-2 pb-2 border-bottom">
+                                <strong>{{ record.get_maintenance_type_display }}</strong><br>
+                                <small class="text-muted">{{ record.maintenance_date|date:"M d, Y" }}</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if maintenance_records.count > 5 %}
+                        <p class="text-center mt-2"><small><a href="#history">View all {{ maintenance_records.count }} records</a></small></p>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted small">No maintenance records</p>
+                {% endif %}
+                <a href="{% url 'inframan:maintenance_create' %}?server={{ server.pk }}" class="btn btn-sm btn-primary btn-block mt-2 w-100">
+                    <i class="fas fa-plus"></i> Log Maintenance
+                </a>
+            </div>
+        </div>
+
+        <!-- Monitoring Status -->
+        {% if monitoring %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Monitoring Status</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        <strong>Health:</strong>
+                        <span class="badge bg-{{ monitoring.get_health_color }}">
+                            {{ monitoring.get_health_status_display }}
+                        </span>
+                    </p>
+                    <hr>
+                    <p><strong>CPU:</strong> {{ monitoring.cpu_usage_percent }}%</p>
+                    <div class="progress mb-2" style="height: 10px;">
+                        <div class="progress-bar" style="width: {{ monitoring.cpu_usage_percent }}%"></div>
+                    </div>
+                    
+                    <p><strong>Memory:</strong> {{ monitoring.memory_usage_percent }}%</p>
+                    <div class="progress mb-2" style="height: 10px;">
+                        <div class="progress-bar" style="width: {{ monitoring.memory_usage_percent }}%"></div>
+                    </div>
+                    
+                    <p><strong>Disk:</strong> {{ monitoring.disk_usage_percent }}%</p>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar" style="width: {{ monitoring.disk_usage_percent }}%"></div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if server.notes %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">Notes</h5>
+        </div>
+        <div class="card-body">
+            {{ server.notes|linebreaks }}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

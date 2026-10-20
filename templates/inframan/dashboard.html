@@ -1,0 +1,277 @@
+{% extends 'shiro/base.html' %}
+
+{% block title %}Infrastructure Dashboard - Companion App{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-building"></i> Infrastructure Management</h1>
+</div>
+
+<!-- Top Stats Row -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card stat-card-teal">
+            <div class="stat-card-header">
+                <div class="stat-icon">
+                    <i class="fas fa-server"></i>
+                </div>
+                <div class="stat-toggle">
+                    <i class="fas fa-circle"></i>
+                </div>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-number">{{ total_servers }}</div>
+                <div class="stat-label">Total Servers</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card stat-card-orange">
+            <div class="stat-card-header">
+                <div class="stat-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div class="stat-toggle">
+                    <i class="fas fa-circle"></i>
+                </div>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-number">{{ production_servers }}</div>
+                <div class="stat-label">Production</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card stat-card-yellow">
+            <div class="stat-card-header">
+                <div class="stat-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="stat-toggle">
+                    <i class="fas fa-circle"></i>
+                </div>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-number">{{ spare_servers }}</div>
+                <div class="stat-label">Spare</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card stat-card-purple">
+            <div class="stat-card-header">
+                <div class="stat-icon">
+                    <i class="fas fa-wrench"></i>
+                </div>
+                <div class="stat-toggle">
+                    <i class="fas fa-circle"></i>
+                </div>
+            </div>
+            <div class="stat-card-body">
+                <div class="stat-number">{{ maintenance_servers }}</div>
+                <div class="stat-label">Maintenance</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main Content Area (Left) -->
+    <div class="col-lg-8">
+        <!-- Overview Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Infrastructure Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="insight-box">
+                            <div class="insight-number">{{ total_sites }}</div>
+                            <div class="insight-label">Active Sites</div>
+                            <small class="text-muted">Data centers</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="insight-box">
+                            <div class="insight-number">{{ total_regions }}</div>
+                            <div class="insight-label">Regions</div>
+                            <small class="text-muted">Geographic coverage</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'inframan:server_create' %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Add Server
+                            </a>
+                            <a href="{% url 'inframan:site_create' %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Add Site
+                            </a>
+                            <a href="{% url 'inframan:maintenance_create' %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Log Maintenance
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Navigation</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            <a href="{% url 'inframan:server_list' %}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-server"></i> View All Servers
+                            </a>
+                            <a href="{% url 'inframan:site_list' %}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-building"></i> View All Sites
+                            </a>
+                            <a href="{% url 'inframan:maintenance_list' %}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-history"></i> Maintenance History
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Servers -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recently Added Servers</h5>
+                <a href="{% url 'inframan:server_list' %}" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_servers %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>IP Address</th>
+                                    <th>Environment</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for server in recent_servers %}
+                                    <tr>
+                                        <td><strong>{{ server.name }}</strong></td>
+                                        <td><code>{{ server.ip_address }}</code></td>
+                                        <td><span class="badge bg-info">{{ server.get_environment_display }}</span></td>
+                                        <td><span class="badge bg-{% if server.status == 'active' %}success{% elif server.status == 'maintenance' %}warning{% else %}secondary{% endif %}">{{ server.get_status_display }}</span></td>
+                                        <td><a href="{% url 'inframan:server_detail' server.pk %}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-3">No servers added yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="col-lg-4">
+        <!-- Maintenance History -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Maintenance</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_maintenance %}
+                    <div class="maintenance-list">
+                        {% for record in recent_maintenance %}
+                            <div class="maintenance-item mb-3 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ record.server.name }}</strong>
+                                    <small class="text-muted">{{ record.maintenance_date|date:"M d, Y" }}</small>
+                                </div>
+                                <p class="mb-1 small">
+                                    <span class="badge bg-primary">{{ record.get_maintenance_type_display }}</span>
+                                </p>
+                                <small class="text-muted">{{ record.description|truncatewords:10 }}</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-3">No maintenance records</p>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-light">
+                <a href="{% url 'inframan:maintenance_list' %}" class="btn btn-sm btn-primary">View All</a>
+            </div>
+        </div>
+
+        <!-- Server Distribution -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Server Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="metric-row">
+                    <span class="metric-label">Production</span>
+                    <span class="metric-value">{{ production_servers }}</span>
+                </div>
+                <hr>
+                <div class="metric-row">
+                    <span class="metric-label">Staging</span>
+                    <span class="metric-value">-</span>
+                </div>
+                <hr>
+                <div class="metric-row">
+                    <span class="metric-label">Development</span>
+                    <span class="metric-value">-</span>
+                </div>
+                <hr>
+                <div class="metric-row">
+                    <span class="metric-label">Spare</span>
+                    <span class="metric-value">{{ spare_servers }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Infrastructure Links -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Management</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'inframan:region_list' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-globe"></i> Regions
+                    </a>
+                    <a href="{% url 'inframan:site_list' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-map-marker-alt"></i> Sites
+                    </a>
+                    <a href="{% url 'inframan:server_list' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-server"></i> Servers
+                    </a>
+                    <a href="/admin/inframan/" class="list-group-item list-group-item-action">
+                        <i class="fas fa-cog"></i> Admin Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
