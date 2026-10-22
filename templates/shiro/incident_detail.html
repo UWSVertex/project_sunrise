@@ -1,149 +1,108 @@
 {% extends 'shiro/base.html' %}
 
-{% block title %}{{ task.title }} - Companion App{% endblock %}
+{% block title %}{{ incident.ticket_id }} - Companion App{% endblock %}
 
 {% block content %}
 <div class="page-header d-flex justify-content-between align-items-center">
     <div>
-        <h1>{{ task.title }}</h1>
-        {% if task.project %}
-            <p class="text-muted mb-0">Project: <a href="{% url 'shiro:project_detail' task.project.pk %}">{{ task.project.name }}</a></p>
-        {% endif %}
+        <h1>{{ incident.title }}</h1>
+        <p class="text-muted mb-0">{{ incident.ticket_id }}</p>
     </div>
     <div class="btn-group">
-        <a href="{% url 'shiro:task_edit' task.pk %}" class="btn btn-warning">
+        <a href="{% url 'shiro:incident_edit' incident.pk %}" class="btn btn-warning">
             <i class="fas fa-edit"></i> Edit
         </a>
-        <a href="{% url 'shiro:task_delete' task.pk %}" class="btn btn-danger">
+        <a href="{% url 'shiro:incident_delete' incident.pk %}" class="btn btn-danger">
             <i class="fas fa-trash"></i> Delete
         </a>
     </div>
 </div>
 
 <div class="row mb-4">
-    <div class="col-md-8">
-        <div class="card">
+    <div class="col-lg-8">
+        <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Task Information</h5>
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Incident Details</h5>
             </div>
             <div class="card-body">
-                {% if task.description %}
-                    <div class="mb-3">
-                        <strong>Description:</strong>
-                        <p class="text-muted">{{ task.description|linebreaks }}</p>
-                    </div>
-                {% endif %}
-                
+                <p>{{ incident.description|linebreaks }}</p>
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Status:</strong> <span class="badge bg-{% if task.completed %}success{% elif task.status == 'in_progress' %}primary{% else %}secondary{% endif %}">{{ task.get_status_display }}</span></p>
-                        <p><strong>Priority:</strong> <span class="badge bg-{% if task.priority == 'critical' %}danger{% elif task.priority == 'high' %}warning{% elif task.priority == 'medium' %}info{% else %}secondary{% endif %}">{{ task.get_priority_display }}</span></p>
-                        <p><strong>Due Date:</strong> {{ task.due_date|date:"M d, Y" }}
-                            {% if task.is_overdue %}
-                                <span class="badge bg-danger">Overdue</span>
-                            {% elif days_until_due >= 0 %}
-                                <span class="badge bg-info">{{ days_until_due }} days left</span>
-                            {% endif %}
-                        </p>
+                        <p><strong>Status:</strong> {{ incident.get_status_display }}</p>
+                        <p><strong>Urgency:</strong> {{ incident.get_urgency_display }}</p>
+                        <p><strong>Impact:</strong> {{ incident.get_impact_display }}</p>
+                        <p><strong>Priority:</strong> {{ incident.get_priority_display }}</p>
+                        <p><strong>Reported by:</strong> {{ incident.reported_by }}</p>
+                        <p><strong>Reported:</strong> {{ incident.reported_date|date:"M d, Y - g:i A" }}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Assigned To:</strong> {% if task.assigned_to %}<span class="badge bg-info">{{ task.assigned_to }}</span>{% else %}<span class="text-muted">Unassigned</span>{% endif %}</p>
-                        {% if task.estimated_hours %}
-                            <p><strong>Estimated Hours:</strong> {{ task.estimated_hours }}</p>
-                        {% endif %}
-                        {% if task.actual_hours %}
-                            <p><strong>Actual Hours:</strong> {{ task.actual_hours }}</p>
-                        {% endif %}
+                        <p><strong>Assigned to:</strong> {{ incident.assigned_to|default:"-" }}</p>
+                        <p><strong>Assignment group:</strong> {{ incident.assignment_group|default:"-" }}</p>
+                        <p><strong>Affected service:</strong> {{ incident.affected_service|default:"-" }}</p>
+                        <p><strong>Affected CI:</strong> {{ incident.affected_ci|default:"-" }}</p>
+                        <p><strong>Category:</strong> {{ incident.category|default:"-" }}{% if incident.subcategory %} / {{ incident.subcategory }}{% endif %}</p>
+                        <p><strong>Target resolution:</strong> {{ incident.target_resolution_date|date:"M d, Y - g:i A"|default:"-" }}</p>
                     </div>
                 </div>
-                
-                <div class="border-top pt-3 mt-3">
-                    <p><strong>Completed:</strong> {% if task.completed %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-danger">No</span>{% endif %}</p>
-                    {% if task.start_date %}
-                        <p><strong>Started:</strong> {{ task.start_date|date:"M d, Y" }}</p>
-                    {% endif %}
-                    {% if task.completed_date %}
-                        <p><strong>Completed On:</strong> {{ task.completed_date|date:"M d, Y" }}</p>
-                    {% endif %}
-                    <p><strong>Created:</strong> {{ task.created_at|date:"M d, Y - g:i A" }}</p>
-                </div>
+                {% if incident.resolution %}
+                    <div class="border-top pt-3">
+                        <strong>Resolution</strong>
+                        <p>{{ incident.resolution|linebreaks }}</p>
+                    </div>
+                {% endif %}
+                {% if incident.root_cause %}
+                    <div class="border-top pt-3">
+                        <strong>Root cause</strong>
+                        <p>{{ incident.root_cause|linebreaks }}</p>
+                    </div>
+                {% endif %}
+                {% if incident.notes %}
+                    <div class="border-top pt-3">
+                        <strong>Notes</strong>
+                        <p>{{ incident.notes|linebreaks }}</p>
+                    </div>
+                {% endif %}
+                {% if is_overdue %}
+                    <span class="badge bg-danger">Overdue</span>
+                {% endif %}
             </div>
         </div>
     </div>
-    
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    {% if not task.completed %}
-                        <a href="{% url 'shiro:task_toggle' task.pk %}" class="btn btn-success btn-lg">
-                            <i class="fas fa-check-circle"></i> Mark as Complete
-                        </a>
-                    {% else %}
-                        <a href="{% url 'shiro:task_toggle' task.pk %}" class="btn btn-warning btn-lg">
-                            <i class="fas fa-redo"></i> Mark as Incomplete
-                        </a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Comments Section -->
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-comments"></i> Comments ({{ comments.count }})</h5>
-    </div>
-    <div class="card-body">
-        {% if comments %}
-            <div class="mb-4">
-                {% for comment in comments %}
-                    <div class="card mb-3 border-left-4" style="border-left: 4px solid #3b82f6;">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <strong>{{ comment.author }}</strong>
-                                <small class="text-muted">{{ comment.created_at|date:"M d, Y - g:i A" }}</small>
-                            </div>
-                            <p class="mb-0">{{ comment.content|linebreaks }}</p>
-                        </div>
-                    </div>
-                {% endfor %}
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clipboard"></i> Work Notes</h5>
             </div>
-        {% else %}
-            <p class="text-muted text-center py-3">No comments yet. Be the first to comment!</p>
-        {% endif %}
-        
-        <!-- Add Comment Form -->
-        <div class="border-top pt-3">
-            <h6 class="mb-3">Add a Comment</h6>
-            <form method="post" novalidate>
-                {% csrf_token %}
-                
-                <div class="mb-3">
-                    <label for="{{ comment_form.author.id_for_label }}" class="form-label">Your Name</label>
-                    {{ comment_form.author }}
-                    {% if comment_form.author.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in comment_form.author.errors %}{{ error }}{% endfor %}
+            <div class="card-body">
+                {% for note in notes %}
+                    <div class="border-bottom mb-3 pb-3">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ note.author }}</strong>
+                            <small class="text-muted">{{ note.created_at|date:"M d, Y - g:i A" }}</small>
                         </div>
-                    {% endif %}
-                </div>
-                
-                <div class="mb-3">
-                    <label for="{{ comment_form.content.id_for_label }}" class="form-label">Comment</label>
-                    {{ comment_form.content }}
-                    {% if comment_form.content.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in comment_form.content.errors %}{{ error }}{% endfor %}
+                        <p class="mb-1">{{ note.note|linebreaks }}</p>
+                        {% if note.is_public %}<span class="badge bg-info">Public</span>{% endif %}
+                    </div>
+                {% empty %}
+                    <p class="text-muted">No work notes yet.</p>
+                {% endfor %}
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% for field in note_form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% for error in field.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
                         </div>
-                    {% endif %}
-                </div>
-                
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-paper-plane"></i> Post Comment
-                </button>
-            </form>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Add Work Note
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>

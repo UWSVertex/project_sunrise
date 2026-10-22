@@ -191,7 +191,7 @@ class IncidentForm(forms.ModelForm):
                   'reported_by', 'assigned_to', 'assignment_group', 'affected_service', 'affected_ci',
                   'target_resolution_date', 'category', 'subcategory', 'resolution', 'root_cause', 'notes']
         widgets = {
-            'ticket_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., INC0001234', 'readonly': True}),
+            'ticket_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., INC0001234'}),
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Incident title'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Detailed description'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
@@ -261,7 +261,7 @@ class ChangeRequestForm(forms.ModelForm):
                   'test_plan', 'affected_services', 'affected_ci', 'target_start_date', 'target_end_date',
                   'business_justification', 'communication_plan', 'notes']
         widgets = {
-            'ticket_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., CHG0001234', 'readonly': True}),
+            'ticket_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., CHG0001234'}),
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Change request title'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Detailed description of change'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
